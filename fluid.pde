@@ -5,8 +5,8 @@ long lastTimeMillis;
 
 void setup() {
   size(600, 600);
-  grid = new FluidGrid(50, 50, 20, 0.00001);
-  grid.setSource(5, 3, 0.1);
+  grid = new FluidGrid(100, 100, 6, 0.000001);
+  grid.setSource(40, 40, 0.1);
   lastTimeMillis = System.currentTimeMillis();
 }
 
@@ -17,5 +17,6 @@ void draw() {
   
   lastTimeMillis = millis;
   background(255);
+  noStroke();
   grid.render();
 }
