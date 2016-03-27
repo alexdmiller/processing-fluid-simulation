@@ -1,7 +1,5 @@
 class FluidGrid {
-  private float[] densities;
-  private float[] lastDensities;
-  
+  private float[] densities;  
   private float[] u;
   private float[] v;
   
@@ -16,26 +14,26 @@ class FluidGrid {
     this.width = width;
     this.height = height;
     this.cellSize = cellSize;
+    this.diffusion = diffusion;
     
-    this.densities = new float[(width + 2) * (height + 2)];
-    this.u = new float[(width + 2) * (height + 2)];
-    this.v = new float[(width + 2) * (height + 2)];
+    densities = new float[(width + 2) * (height + 2)];
+    u = new float[(width + 2) * (height + 2)];
+    v = new float[(width + 2) * (height + 2)];
     
-    for (int i = 0; i < this.u.length; i++) {
-      this.v[i] = -0.0001;
+    for (int i = 0; i < u.length; i++) {
+      v[i] = -0.0001;
     }
     
-    this.sources = new float[(width + 2) * (height + 2)];
-    this.diffusion = diffusion;
+    sources = new float[(width + 2) * (height + 2)];
   }
   
   public void setSource(int col, int row, float density) {
-    this.sources[(row + 1) * (this.width + 2) + (col + 1)] = density; //<>//
+    sources[(row + 1) * (this.width + 2) + (col + 1)] = density; //<>//
   }
   
   public void setVelocity(int col, int row, float x, float y) {
-    this.u[(row + 1) * (this.width + 2) + (col + 1)] = x;
-    this.v[(row + 1) * (this.width + 2) + (col + 1)] = y;
+    u[(row + 1) * (this.width + 2) + (col + 1)] = x;
+    v[(row + 1) * (this.width + 2) + (col + 1)] = y;
   }
   
   public void render() {
@@ -56,42 +54,42 @@ class FluidGrid {
   }
   
   public void step(float dt) {    
-    addSources(this.sources, this.densities, dt);
-    
-    this.lastDensities = this.densities;
-    this.densities = new float[(width + 2) * (height + 2)];
-    
-    diffuse(this.lastDensities, this.densities, dt);
-    
-    this.lastDensities = this.densities;
-    this.densities = new float[(width + 2) * (height + 2)];
-    
-    advect(this.lastDensities, this.densities, this.u, this.v, dt);
+    densities = addSources(sources, densities, dt);
+    densities = diffuse(densities, dt);  
+    densities = advect(this.densities, u, v, dt);
   }
   
-  private void addSources(float[] sources, float[] curr, float dt) {
+  private float[] addSources(float[] sources, float[] prev, float dt) {
+    float[] next = new float[(width + 2) * (height + 2)];
     for (int i = 0; i < sources.length; i++) {
-      curr[i] += (sources[i] * dt);
+       next[i] = prev[i] + (sources[i] * dt);
     }
+    return next;
   }
   
-  private void diffuse(float[] last, float[] curr, float dt) {
+  private float[] diffuse(float[] prev, float dt) {
+    float[] next = new float[(width + 2) * (height + 2)];
+    
     float a = dt * (width + 2) * (height + 2) * this.diffusion;
     
     for (int k = 0; k < 20; k++) {
       for (int row = 0; row < height; row++) {
         for (int col = 0; col < width; col++) {
-          curr[index(col, row)] = (last[index(col, row)] + 
-              a * (curr[index(col - 1, row)] +
-                  curr[index(col, row - 1)] +
-                  curr[index(col + 1, row)] +
-                  curr[index(col, row + 1)])) / (1 + 4* a); 
+          next[index(col, row)] = (prev[index(col, row)] + 
+              a * (next[index(col - 1, row)] +
+                  next[index(col, row - 1)] +
+                  next[index(col + 1, row)] +
+                  next[index(col, row + 1)])) / (1 + 4* a); 
         }
       }
     }
+    
+    return next;
   }
   
-  private void advect(float[] last, float[] curr, float[] u, float[] v, float dt) {
+  private float[] advect(float[] prev, float[] u, float[] v, float dt) {
+    float[] next = new float[(width + 2) * (height + 2)];
+    
     float dt0 = dt * this.width;
     
     for (int row = 0; row < this.height; row++) {
@@ -119,11 +117,13 @@ class FluidGrid {
         float t1 = y - j0;
         float t0 = 1 - t1;
         
-        curr[index(col, row)] =
-            s0 * (t0 * last[index(i0, j0)] + t1 * last[index(i0, j1)]) +
-            s1 * (t0 * last[index(i1, j0)] + t1 * last[index(i1, j1)]);
+        next[index(col, row)] =
+            s0 * (t0 * prev[index(i0, j0)] + t1 * prev[index(i0, j1)]) +
+            s1 * (t0 * prev[index(i1, j0)] + t1 * prev[index(i1, j1)]);
       }
     }
+    
+    return next;
   }
   
   private int index(int col, int row) {
