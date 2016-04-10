@@ -1,5 +1,7 @@
 class FluidGrid {
-  private float[] densities;  
+  private float[] densities;
+  private float[] fu;
+  private float[] fv;
   private float[] u;
   private float[] v;
   
@@ -9,19 +11,28 @@ class FluidGrid {
   private int height;
   private int cellSize;
   private float diffusion;
+  private float visc;
   
-  public FluidGrid(int width, int height, int cellSize, float diffusion) {
+  public FluidGrid(
+      int width,
+      int height,
+      int cellSize,
+      float diffusion,
+      float visc) {
     this.width = width;
     this.height = height;
     this.cellSize = cellSize;
     this.diffusion = diffusion;
+    this.visc = visc;
     
     densities = new float[(width + 2) * (height + 2)];
     u = new float[(width + 2) * (height + 2)];
     v = new float[(width + 2) * (height + 2)];
+    fu = new float[(width + 2) * (height + 2)];
+    fv = new float[(width + 2) * (height + 2)];
     
     for (int i = 0; i < u.length; i++) {
-      v[i] = -0.0001;
+      fv[i] = 0.000001;
     }
     
     sources = new float[(width + 2) * (height + 2)];
@@ -54,12 +65,19 @@ class FluidGrid {
   }
   
   public void step(float dt) {    
-    densities = addSources(sources, densities, dt);
-    densities = diffuse(densities, dt);  
-    densities = advect(this.densities, u, v, dt);
+    densities = addSources(densities, sources, dt);
+    densities = diffuse(densities, diffusion, dt);  
+    densities = advect(densities, u, v, dt);
+    
+    u = addSources(u, fu, dt);
+    v = addSources(v, fv, dt);
+    u = diffuse(u, visc, dt);
+    v = diffuse(v, visc, dt);
+    u = advect(u, u, v, dt);
+    v = advect(v, u, v, dt);
   }
   
-  private float[] addSources(float[] sources, float[] prev, float dt) {
+  private float[] addSources(float[] prev, float[] sources, float dt) {
     float[] next = new float[(width + 2) * (height + 2)];
     for (int i = 0; i < sources.length; i++) {
        next[i] = prev[i] + (sources[i] * dt);
@@ -67,10 +85,10 @@ class FluidGrid {
     return next;
   }
   
-  private float[] diffuse(float[] prev, float dt) {
+  private float[] diffuse(float[] prev, float diff, float dt) {
     float[] next = new float[(width + 2) * (height + 2)];
     
-    float a = dt * (width + 2) * (height + 2) * this.diffusion;
+    float a = dt * (width + 2) * (height + 2) * diff;
     
     for (int k = 0; k < 20; k++) {
       for (int row = 0; row < height; row++) {
@@ -79,7 +97,7 @@ class FluidGrid {
               a * (next[index(col - 1, row)] +
                   next[index(col, row - 1)] +
                   next[index(col + 1, row)] +
-                  next[index(col, row + 1)])) / (1 + 4* a); 
+                  next[index(col, row + 1)])) / (1 + 4 * a); 
         }
       }
     }
