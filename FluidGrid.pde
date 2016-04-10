@@ -46,9 +46,9 @@ class FluidGrid {
     sources[(row + 1) * (this.width + 2) + (col + 1)] = density; //<>//
   }
   
-  public void setVelocity(int col, int row, float x, float y) {
-    u[(row + 1) * (this.width + 2) + (col + 1)] = x;
-    v[(row + 1) * (this.width + 2) + (col + 1)] = y;
+  public void addVelocity(int col, int row, float x, float y) {
+    u[(row + 1) * (this.width + 2) + (col + 1)] += x;
+    v[(row + 1) * (this.width + 2) + (col + 1)] += y;
   }
   
   public void render() {
@@ -58,8 +58,8 @@ class FluidGrid {
         fill(this.density[row * (this.width + 2) + col] * 10.0);
         rect(col * this.cellSize, row * this.cellSize, this.cellSize, this.cellSize);
         
-        stroke(255, 0, 0);
-        
+        //stroke(255, 0, 0);
+        //strokeWeight(1);
         //pushMatrix();
         //translate(col * this.cellSize + this.cellSize / 2, row * this.cellSize + this.cellSize / 2);
         //line(0, 0, this.u[row * (this.width + 2) + col] * 10000, this.v[row * (this.width + 2) + col] * 10000);
