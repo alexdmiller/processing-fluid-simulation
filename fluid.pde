@@ -6,19 +6,17 @@ long lastTimeMillis;
 float lastMouseX;
 float lastMouseY;
 
-int CELL_SIZE = 3;
+int CELL_SIZE = 7;
 
 
 void setup() {
-  size(400, 400);
+  size(800, 800);
   grid = new FluidGrid(
       width / CELL_SIZE,
       height / CELL_SIZE,
       CELL_SIZE,
       0.000001,
       0.00001);
-  grid.setSource(40, 50, 1);
-  grid.setSource(20, 20, 0.2);
   lastTimeMillis = System.currentTimeMillis();
 }
 
@@ -28,8 +26,14 @@ void draw() {
   
   float vx = (mouseX - lastMouseX) / 100.0;
   float vy = (mouseY - lastMouseY) / 100.0;
+
+  
   
   grid.setVelocity(mouseX / CELL_SIZE, mouseY / CELL_SIZE, vx, vy);
+  
+  if (mousePressed) {
+    grid.addDensity(mouseX / CELL_SIZE, mouseY / CELL_SIZE, 100);
+  }
   
   grid.step(delta);
   
