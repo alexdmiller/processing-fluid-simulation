@@ -1,3 +1,11 @@
+/*
+ * Click to add density to a cell.
+ * Move your mouse to add a force to the fluid.
+ *
+ * Written by Alex Miller (rattyduck.com).
+ * Based on work by Jos Stam.
+ */
+
 import java.util.Arrays;
 
 FluidGrid grid;
